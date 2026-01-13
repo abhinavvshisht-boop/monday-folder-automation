@@ -1,7 +1,8 @@
 const axios = require("axios");
 
 const API_URL = "https://api.monday.com/v2";
-const TOKEN = process.env.MONDAY_TOKEN;
+const TOKEN = process.env.MONDAY_API_TOKEN;
+
 
 async function query(query) {
   return axios.post(
