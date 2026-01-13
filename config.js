@@ -1,0 +1,4 @@
+module.exports = {
+  WORKSPACE_ID: 13746036,
+  TEMPLATE_FOLDER_ID: 19210093
+};
