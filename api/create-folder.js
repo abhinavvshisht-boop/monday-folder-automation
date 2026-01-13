@@ -2,17 +2,21 @@ const { createProjectFolder } = require("../folderService");
 
 module.exports = async (req, res) => {
   try {
-    const event = req.body.event;
+    const { event } = req.body;
+
+    if (!event) {
+      return res.status(400).send("No event received");
+    }
 
     console.log("Worker started for item:", event.itemId);
 
     await createProjectFolder(event);
 
-    console.log("Worker finished");
+    console.log("Worker finished successfully");
 
-    return res.status(200).json({ status: "done" });
+    return res.status(200).send("Folder created");
   } catch (err) {
-    console.error("Worker error:", err);
-    return res.status(500).json({ error: "failed" });
+    console.error("Worker failed:", err);
+    return res.status(500).send("Worker error");
   }
 };
