@@ -2,7 +2,7 @@ const { createProjectFolder } = require("./folderService");
 
 async function handleWebhook(req, res) {
 
-  // ✅ Handshake
+  // ✅ monday handshake
   if (req.body.challenge) {
     return res.status(200).json({ challenge: req.body.challenge });
   }
@@ -20,13 +20,19 @@ async function handleWebhook(req, res) {
     return res.status(200).send("Ignored");
   }
 
-  // ✅ RESPOND IMMEDIATELY
-  res.status(200).send("Accepted");
+  try {
+    console.log("Starting folder creation for item:", event.itemId);
 
-  // ✅ DO WORK ASYNC (DO NOT AWAIT)
-  createProjectFolder(event)
-    .then(() => console.log("Folder created"))
-    .catch(err => console.error("Folder error:", err));
+    // ✅ IMPORTANT: await it
+    await createProjectFolder(event);
+
+    console.log("Folder created successfully");
+
+    return res.status(200).send("Completed");
+  } catch (err) {
+    console.error("Folder creation failed:", err);
+    return res.status(500).send("Error");
+  }
 }
 
 module.exports = { handleWebhook };
