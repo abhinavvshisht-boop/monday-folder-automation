@@ -22,7 +22,7 @@ async function handleWebhook(req, res) {
   res.status(200).send("Accepted");
 
   // ✅ trigger worker (non-blocking)
-  fetch(`${process.env.VERCEL_URL}/api/create-folder`, {
+  fetch(`https://monday-folder-automation.vercel.app/api/create-folder`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ event })
@@ -30,4 +30,3 @@ async function handleWebhook(req, res) {
 }
 
 module.exports = { handleWebhook };
-    
