@@ -1,14 +1,18 @@
 const axios = require("axios");
 
 const API_URL = "https://api.monday.com/v2";
-const TOKEN = process.env.MONDAY_API_TOKEN;
+const TOKEN = process.env.MONDAY_TOKEN;
 
+if (!TOKEN) {
+  console.error("❌ MONDAY_TOKEN is missing in environment variables");
+}
 
-async function query(query) {
+async function query(query, variables = {}) {
   try {
-    return await axios.post(
+    console.log("📡 Sending query to monday...");
+    const response = await axios.post(
       API_URL,
-      { query },
+      { query, variables },
       {
         headers: {
           Authorization: TOKEN,
@@ -16,69 +20,21 @@ async function query(query) {
         },
       }
     );
+
+    console.log("✅ monday raw response:", JSON.stringify(response.data, null, 2));
+
+    if (response.data.errors) {
+      console.error("❌ monday GraphQL errors:", response.data.errors);
+      throw new Error("Monday GraphQL Error");
+    }
+
+    return response.data;
   } catch (err) {
-    console.error("MONDAY API ERROR:", err.response?.data || err.message);
+    console.error("🔥 MONDAY API CALL FAILED");
+    console.error("Message:", err.message);
+    console.error("Response:", err.response?.data);
     throw err;
   }
 }
 
-
-module.exports = {
-  createFolder: async (workspaceId, name) => {
-    const q = `
-      mutation {
-        create_folder(workspace_id: ${workspaceId}, name: "${name}") {
-          id
-        }
-      }
-    `;
-    const res = await query(q);
-    return res.data.data.create_folder.id;
-  },
-
-  getBoardsFromFolder: async (folderId) => {
-    const q = `
-      query {
-        folders(ids: "${folderId}") {
-          children {
-            id
-            type
-          }
-        }
-      }
-    `;
-    const res = await query(q);
-    return res.data.data.folders[0].children.filter(
-      c => c.type === "board"
-    );
-  },
-
-  duplicateBoard: async (boardId, folderId) => {
-    const q = `
-      mutation {
-        duplicate_board(
-          board_id: ${boardId},
-          duplicate_type: duplicate_board_with_structure,
-          folder_id: "${folderId}"
-        ) {
-          board { id }
-        }
-      }
-    `;
-    await query(q);
-  },
-
-  markFolderCreated: async (boardId, itemId) => {
-    const q = `
-      mutation {
-        change_simple_column_value(
-          board_id: ${boardId},
-          item_id: ${itemId},
-          column_id: "boolean_mkzjpbme",
-          value: "Yes"
-        )
-      }
-    `;
-    await query(q);
-  }
-};
+module.exports = { query };
