@@ -1,6 +1,10 @@
-const { createProjectFolder } = require("./folderService");
-
 async function handleWebhook(req, res) {
+
+  // ✅ monday handshake
+  if (req.body.challenge) {
+    return res.status(200).json({ challenge: req.body.challenge });
+  }
+
   const event = req.body.event;
 
   if (!event) {
@@ -8,19 +12,21 @@ async function handleWebhook(req, res) {
   }
 
   if (
-    event.columnId !== color_mkz7ajqt ||
+    event.columnId !== "color_mkz7ajqt" ||
     event.value?.label?.text !== "Approved"
   ) {
     return res.status(200).send("Ignored");
   }
 
-  try {
-    await createProjectFolder(event);
-    res.status(200).send("Processed");
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error");
-  }
+  // ✅ Respond IMMEDIATELY
+  res.status(200).send("Accepted");
+
+  // ✅ Trigger background worker
+  fetch(`${process.env.VERCEL_URL}/api/create-folder`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ event })
+  }).catch(err => console.error("Worker trigger failed:", err));
 }
 
 module.exports = { handleWebhook };
