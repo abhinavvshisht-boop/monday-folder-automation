@@ -18,10 +18,10 @@ async function handleWebhook(req, res) {
     return res.status(200).send("Ignored");
   }
 
-  // ✅ Respond IMMEDIATELY
+  // ✅ respond immediately
   res.status(200).send("Accepted");
 
-  // ✅ Trigger background worker
+  // ✅ trigger worker (non-blocking)
   fetch(`${process.env.VERCEL_URL}/api/create-folder`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -30,3 +30,4 @@ async function handleWebhook(req, res) {
 }
 
 module.exports = { handleWebhook };
+    
