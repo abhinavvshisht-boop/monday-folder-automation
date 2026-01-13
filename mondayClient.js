@@ -5,17 +5,23 @@ const TOKEN = process.env.MONDAY_API_TOKEN;
 
 
 async function query(query) {
-  return axios.post(
-    API_URL,
-    { query },
-    {
-      headers: {
-        Authorization: TOKEN,
-        "Content-Type": "application/json",
-      },
-    }
-  );
+  try {
+    return await axios.post(
+      API_URL,
+      { query },
+      {
+        headers: {
+          Authorization: TOKEN,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  } catch (err) {
+    console.error("MONDAY API ERROR:", err.response?.data || err.message);
+    throw err;
+  }
 }
+
 
 module.exports = {
   createFolder: async (workspaceId, name) => {
