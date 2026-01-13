@@ -1,27 +1,32 @@
-const monday = require("./mondayClient");
-const config = require("./config");
+const { query } = require("./mondayClient");
+const { WORKSPACE_ID } = require("./config");
 
 async function createProjectFolder(event) {
-  const { boardId, itemId } = event;
+  console.log("📁 createProjectFolder STARTED");
+  console.log("Item ID:", event.itemId);
+  console.log("Workspace ID:", WORKSPACE_ID);
 
-  // 1. Create folder
-  const folderId = await monday.createFolder(
-    config.WORKSPACE_ID,
-    `Project - ${itemId}`
-  );
+  const mutation = `
+    mutation CreateFolder($workspaceId: ID!, $name: String!) {
+      create_folder(workspace_id: $workspaceId, name: $name) {
+        id
+        name
+      }
+    }
+  `;
 
-  // 2. Get template boards
-  const boards = await monday.getBoardsFromFolder(
-    config.TEMPLATE_FOLDER_ID
-  );
+  try {
+    const result = await query(mutation, {
+      workspaceId: WORKSPACE_ID,
+      name: `Project-${event.itemId}`,
+    });
 
-  // 3. Duplicate boards
-  for (const board of boards) {
-    await monday.duplicateBoard(board.id, folderId);
+    console.log("🎉 Folder created:", JSON.stringify(result, null, 2));
+    return result;
+  } catch (err) {
+    console.error("💥 Folder creation FAILED");
+    throw err;
   }
-
-  // 4. Mark item as processed
-  await monday.markFolderCreated(boardId, itemId);
 }
 
 module.exports = { createProjectFolder };
