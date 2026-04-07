@@ -8,7 +8,7 @@ async function createProjectFolder(event) {
 
   const mutation = `
     mutation CreateFolder($workspaceId: ID!, $name: String!) {
-      create_folder(workspace_id: $workspaceId, name: $name) {
+      create_folder(workspace_id: 18407122201, name: $name) {
         id
         name
       }
